@@ -9,4 +9,4 @@ The demo scene is two interlocking spheres (with varying scattering behaviour), 
 
 The raytracer attempts to estimate the error in the image (based on neighbourhood noise), and selectively renders certain pixels to attempt to get an even level of noise.
 
-The preview/display *adds* noise to the image in an attempt to simulate an even level of noise across the image, in attempt to prevent the viewer from attributing noise to object texture.  [Here](http://geraintluff.github.io/js-raytrace-demo/index-no-noise.html) is what it looks like *without* that noise.
+The preview/display *adds* noise to the image to simulate an even level of noise.  The idea is to prevent the viewer from attributing noise to object texture.  [Here](http://geraintluff.github.io/js-raytrace-demo/index-no-noise.html) is what it looks like *without* that noise.
