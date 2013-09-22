@@ -1,0 +1,106 @@
+<html>
+	<head>
+		<title>Demo</title>
+		<style>
+			body, html {
+				background-color: #AAA;
+			}
+			canvas {
+				border: 1px solid #000;
+				border-radius: 5px;
+				background-color: rgba(128, 192, 255, 0.75);
+			}
+		</style>
+	</head>
+	<body>
+		<script src="rt.js"></script>
+		<canvas id="canvas-target" width=400 height=240></canvas>
+		<canvas id="canvas-noise" width=400 height=240></canvas>
+		<br>
+		<script>
+			var animationFrames = [];
+			
+			var canvas = document.getElementById("canvas-target");
+			canvas.onclick = function () {
+				window.open(canvas.toDataURL("image/png"));
+			};
+			
+			var noiseCanvas = document.getElementById("canvas-noise");
+			
+			var scene = new Scene();
+			scene.addObject(new BasicSphere(
+				new Vector3D(0, 0.5, -3.5),
+//				new Vector3D(1, 0, -2),
+				1.1,
+				Surface.Composite([
+					Surface.Scatter(
+						Spectrum.createRgb(0.3, 0.5, 0.7),
+						0.1
+					),
+					Surface.Scatter(
+						Spectrum.createRgb(0.3, 0.5, 0.7),
+						0.6
+					)
+				])
+			));
+			scene.addObject(new BasicSphere(
+				new Vector3D(-1, -0.2, -3),
+				1,
+				Surface.Composite([
+					Surface.Scatter(
+						Spectrum.createRgb(1.5, 1.1, 0.7),
+						0.01
+					),
+					Surface.Scatter(
+						Spectrum.createRgb(0.1, 0.1, 0.1),
+						1
+					)
+				])
+			));
+			scene.addObject(new BasicSphere(
+				new Vector3D(-1, 1.5, -1),
+				1,
+				Surface.Glow(
+					Spectrum.createRgb(2, 4, 5)
+				)
+			));
+			scene.addObject(new BasicSphere(
+				new Vector3D(2, 1.5, -1),
+				1,
+				Surface.Glow(
+					Spectrum.createRgb(5, 3, 2)
+				)
+			));
+
+			var camera = new Camera(scene, canvas.width, canvas.height, Math.max(canvas.width, canvas.height)*1.2);
+			camera.pixelErrorLimit = 0.05;
+			
+			var overallPixelTotal = 0;
+			var renderFrameTimer = null;
+			function renderFrame() {
+				var start = (new Date).getTime();
+				var totalPixels = 0;
+				while ((new Date).getTime() - start < 200) {
+					var pixelCount = camera.renderPixels(canvas.width*canvas.height*0.1, 5);
+					if (!pixelCount) {
+						console.log("Complete! (" + overallPixelTotal + " rays traced = " + (overallPixelTotal/canvas.width/canvas.height) + " rays/pixel average)");
+						return;
+					}
+					totalPixels += pixelCount;
+					overallPixelTotal += pixelCount;
+					camera.sortPixels();
+				}
+				var end = (new Date).getTime();
+				camera.renderToCanvas(canvas);
+				camera.renderNoiseToCanvas(noiseCanvas);
+				console.log(totalPixels + " pixels in " + (end - start) + "ms" + " (" + Math.round(totalPixels*1000/(end - start)) + " pixels/second) - error max: " + camera.maxPixelError + " 99th: " + camera.sortedPixels[Math.floor(camera.sortedPixels.length*0.01)].error);
+				window.clearTimeout(renderFrameTimer);
+				renderFrameTimer = window.setTimeout(renderFrame, 10);
+			}
+			renderFrame();
+			
+		</script>
+		<a href="javascript:renderFrame();">start</a><br>
+		<a href="javascript:window.clearTimeout(renderFrameTimer);">stop</a>
+	</body>
+</html>
